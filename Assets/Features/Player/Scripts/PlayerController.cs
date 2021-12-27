@@ -14,15 +14,24 @@ public class PlayerController : MonoBehaviour {
     private NavMeshAgent agent;
     private TopDownInput controls;
     private Vector3 attentionDirection = new Vector3(0,0,1);
+    [SerializeField]
+    public AudioClip[] dirtClips;
+    public AudioClip[] metalClips;
+    [SerializeField]
+    public AudioClip clip;
+    [SerializeField]
+    private AudioSource source;
 
 
-    [Header("References")]
+   [Header("References")]
     [SerializeField] public Animator animator;
 
 
     [Header("General Parameters")]
 
     [SerializeField] private float speed = 8.0f;
+
+    private TerrainDetector detector;
 
     private void OnEnable()
     {
@@ -38,6 +47,7 @@ public class PlayerController : MonoBehaviour {
     {
         agent = GetComponent<NavMeshAgent>();
         controls = new TopDownInput();
+        source = GetComponent<AudioSource>();
     }
 	
 	void Update ()
@@ -53,5 +63,51 @@ public class PlayerController : MonoBehaviour {
         // Update animator with input specific
         animator.SetFloat("velocity", agent.velocity.magnitude);
         animator.SetBool("isMoving", agent.velocity.magnitude > 0.3f);
+
+        
+        
+
+    }
+
+    void FixedUpdate()
+    {
+        StartCoroutine(determineGroundandPlayAudio());
+    }
+
+    IEnumerator determineGroundandPlayAudio()
+    {
+       
+
+        if (!(this.animator.GetCurrentAnimatorStateInfo(0).IsName("Move")))
+        {
+            source.volume = 0f;
+            yield return null;
+        }
+        while (source.isPlaying)
+        {
+            yield return null;
+        }
+        if (this.animator.GetCurrentAnimatorStateInfo(0).IsName("Move"))
+        {
+            int betong_mask = LayerMask.GetMask("Betong");
+            int dirt_mask = LayerMask.GetMask("Dirt");
+            if (Physics.Raycast(transform.position, Vector3.down, 0.17f, dirt_mask))
+            {
+                source.volume = 0.02f;
+                clip = dirtClips[UnityEngine.Random.Range(0, dirtClips.Length)];
+                source.pitch = 0.8f;
+                source.PlayOneShot(clip);
+                
+                //yield return new WaitForSeconds(0.2f);
+            }
+            else if (Physics.Raycast(transform.position, Vector3.down, 0.17f, betong_mask))
+            {
+                source.volume = 0.05f;
+                clip = metalClips[UnityEngine.Random.Range(0, metalClips.Length)];
+                source.pitch = 1.4f;
+                source.PlayOneShot(clip);
+            }
+        }
+
     }
 }

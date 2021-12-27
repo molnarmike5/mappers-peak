@@ -33,7 +33,7 @@ public class AxisAlignedCameraController : MonoBehaviour {
     // The camera target
     [SerializeField]
     private Transform target;
- 
+
     void Update()
     {
         // Verify variables.
@@ -41,6 +41,7 @@ public class AxisAlignedCameraController : MonoBehaviour {
         {
             return;
         }
+
 
         Vector3 targetPosition;
         Vector3 positionDelta;
