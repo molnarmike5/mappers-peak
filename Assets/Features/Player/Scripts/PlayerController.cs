@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -31,7 +32,9 @@ public class PlayerController : MonoBehaviour {
 
     [SerializeField] private float speed = 8.0f;
 
-    private TerrainDetector detector;
+    private int currMask;
+
+    public OrreryAudio orrery;
 
     private void OnEnable()
     {
@@ -91,8 +94,14 @@ public class PlayerController : MonoBehaviour {
         {
             int betong_mask = LayerMask.GetMask("Betong");
             int dirt_mask = LayerMask.GetMask("Dirt");
+            int orrery_mask = LayerMask.GetMask("Orrery");
             if (Physics.Raycast(transform.position, Vector3.down, 0.17f, dirt_mask))
             {
+                if (currMask == orrery_mask)
+                {
+                    orrery.LeaveOrrery();
+                }
+                currMask = dirt_mask;
                 source.volume = 0.02f;
                 clip = dirtClips[UnityEngine.Random.Range(0, dirtClips.Length)];
                 source.pitch = 0.8f;
@@ -102,6 +111,23 @@ public class PlayerController : MonoBehaviour {
             }
             else if (Physics.Raycast(transform.position, Vector3.down, 0.17f, betong_mask))
             {
+                if (currMask == orrery_mask)
+                {
+                    orrery.LeaveOrrery();
+                }
+                currMask = betong_mask;
+                source.volume = 0.05f;
+                clip = metalClips[UnityEngine.Random.Range(0, metalClips.Length)];
+                source.pitch = 1.4f;
+                source.PlayOneShot(clip);
+            }
+            else if (Physics.Raycast(transform.position, Vector3.down, 0.17f, orrery_mask))
+            {
+                if (currMask == dirt_mask || currMask == betong_mask)
+                {
+                    orrery.EnterOrrery();
+                }
+                currMask = orrery_mask;
                 source.volume = 0.05f;
                 clip = metalClips[UnityEngine.Random.Range(0, metalClips.Length)];
                 source.pitch = 1.4f;
@@ -110,4 +136,5 @@ public class PlayerController : MonoBehaviour {
         }
 
     }
+
 }
